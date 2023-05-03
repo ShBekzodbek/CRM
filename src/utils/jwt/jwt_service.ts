@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 require("dotenv").config();
 /** @format */
 
-export default function signup(userId: string, email: string): string {
+export default function generateToken(userId: string, email: string): string {
   return jwt.sign(
     { userId: userId, email: email },
     process.env.jwt_secret as string,

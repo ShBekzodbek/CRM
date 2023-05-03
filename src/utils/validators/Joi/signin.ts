@@ -3,21 +3,19 @@
 import { Response } from "express";
 import Joi from "joi";
 
-interface UserRegistration {
-  fullName: string;
+interface UserLogIn {
   email: string;
   password: string;
 }
 
 // define a Joi schema for user registration
 const schema = Joi.object().keys({
-  fullName: Joi.string().max(60).required(),
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
 
 // define a function to validate user input
-export function Signup(userInput: UserRegistration, res: Response): any {
+export function Login(userInput: UserLogIn, res: Response): any {
   // validate the user input against the schema
   const { error, value } = schema.validate(userInput);
   // check if there is any validation error

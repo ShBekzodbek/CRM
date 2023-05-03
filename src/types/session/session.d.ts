@@ -1,5 +1,8 @@
 /** @format */
 
+// import { express } from "express";
+/** @format */
+
 declare global {
   namespace Express {
     interface User {
