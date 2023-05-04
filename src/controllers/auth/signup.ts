@@ -1,12 +1,12 @@
 /** @format */
 
-import { Validator } from "./../../utils/validators/Joi/index";
+import { Validator } from "../../utils/validators/Joi/index";
 
-import { Code } from "./../../interfaces/User/code.interface";
+import { Code } from "../../interfaces/User/code";
 
-import { IUser, User } from "./../../interfaces/User/user.interface";
+import { IUser, User } from "../../interfaces/User/user";
 
-import { generateCode } from "./../../utils/functions/code_generator";
+import { generateCode } from "../../utils/functions/code_generator";
 
 import bcrypt from "bcrypt";
 
@@ -38,6 +38,7 @@ export const Signup = async (
     const password: string = req.body.password;
     const fullName: string = req.body.fullName;
     const email: string = req.body.email;
+    const gender: string = req.body.gender;
     if (!fullName || !email || !password) {
       return res.status(400).send({ message: "Some input is missing" });
     }
@@ -54,6 +55,8 @@ export const Signup = async (
       email: email,
       fullName: fullName,
       password: password,
+      gender: gender as string,
+      position: "user",
     };
 
     const code = generateCode();
@@ -84,13 +87,15 @@ export const verifyUser = async (
     const salt = bcrypt.genSaltSync(10);
     const hash: string = bcrypt.hashSync(user?.password as string, salt);
     const id: string = uuid();
-    const token: string = generateToken(id, user?.email as string);
+    const token: string = generateToken(id, user?.position as string);
     const newUser: IUser = await prisma.user.create({
       data: {
         id: id,
         email: user?.email as string,
         fullName: user?.fullName as string,
         password: hash,
+        position: user?.position,
+        gender: user?.gender as string,
         token: token,
       },
     });

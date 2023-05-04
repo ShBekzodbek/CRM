@@ -1,8 +1,8 @@
 /** @format */
 
-import { Signin } from "../../controllers/auth/signin.controller";
+import { Signin } from "../../controllers/auth/signin";
 
-import { Signup, verifyUser } from "../../controllers/auth/signup.controller";
+import { Signup, verifyUser } from "../../controllers/auth/signup";
 
 import { Router } from "express";
 

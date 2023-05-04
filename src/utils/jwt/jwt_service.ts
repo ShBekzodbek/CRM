@@ -4,9 +4,12 @@ import jwt from "jsonwebtoken";
 require("dotenv").config();
 /** @format */
 
-export default function generateToken(userId: string, email: string): string {
+export default function generateToken(
+  userId: string,
+  position: string
+): string {
   return jwt.sign(
-    { userId: userId, email: email },
+    { userId: userId, position: position },
     process.env.jwt_secret as string,
     {
       expiresIn: "500h",

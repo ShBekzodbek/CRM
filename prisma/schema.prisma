@@ -22,10 +22,12 @@ model User {
   isBanned    Boolean    @default(false)
   position    String?
   status      UserStatus @default(pending)
+  gender      String?
   token       String?
   Comment     Comment[]
   Location    Location[]
   Task        Task[]
+  ExInfo      ExInfo[]
 }
 
 model Task {
@@ -91,10 +93,12 @@ model Location {
 model ExInfo {
   id        String   @id @default(uuid())
   usage     String?
-  role      String?
+  position  String?
   membersT  String?
   membersC  String?
   hear      String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

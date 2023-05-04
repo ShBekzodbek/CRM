@@ -17,6 +17,8 @@ import RedisStore from "connect-redis";
 
 let redisClient = createClient({});
 
+import * as UserRoute from "./routes/User/user";
+
 import path from "path";
 
 import rateLimit from "express-rate-limit";
@@ -45,10 +47,15 @@ dotenv.config({ path: "../" + __dirname + "/.env" });
 
 const app = express();
 
-import * as auth from "./routes/auth/auth";
+import * as auth from "./routes/Auth/auth";
+
 import main from "./utils/functions/connect_db";
-import { User } from "./interfaces/User/user.interface";
-import { Code } from "./interfaces/User/code.interface";
+
+import { User } from "./interfaces/User/user";
+
+import { Code } from "./interfaces/User/code";
+
+import { authMiddleware } from "./middlewares/auth/isAuth";
 
 app.use(limiter);
 app.use(
@@ -69,11 +76,17 @@ app.use(express.json());
 
 app.use(logger("dev"));
 
-app.get("/", (req: Request, res: Response, next: NextFunction) => {
-  return res.status(200).send("Hello World!");
-});
+app.get(
+  "/",
+  authMiddleware as RequestHandler,
+  (req: Request, res: Response, next: NextFunction) => {
+    return res.status(200).send("Hello World!");
+  }
+);
 
 app.use("/auth", auth.router as RequestHandler);
+
+app.use("/me", UserRoute.default);
 
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
   try {
