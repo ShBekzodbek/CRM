@@ -17,7 +17,7 @@ import RedisStore from "connect-redis";
 
 let redisClient = createClient({});
 
-import * as UserRoute from "./routes/User/user";
+import * as UserRoute from "./routes/user/user";
 
 import path from "path";
 
@@ -47,7 +47,7 @@ dotenv.config({ path: "../" + __dirname + "/.env" });
 
 const app = express();
 
-import * as auth from "./routes/Auth/auth";
+import * as auth from "./routes/auth/auth";
 
 import main from "./utils/functions/connect_db";
 
