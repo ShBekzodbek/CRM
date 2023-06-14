@@ -7,37 +7,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Employee {
+  id           String       @id @default(uuid())
+  fullName     String
+  email        String       @unique
+  image        String?
+  phoneNumber  String?
+  password     String
+  gender       String?
+  position     String?
+  accessToken  String?
+  refreshToken String?
+  department   Department[]
+  comments     Comment[]
+  messages     Message[]
+  locations    Location[]
+  companies    Company[]
+  tasks        Task[]
+  exinfo       ExInfo[]
+  users        User[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
 model User {
-  id          String     @id @default(uuid())
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  fullName    String
-  email       String     @unique
-  image       String?    @default("")
-  phoneNumber String?    @unique
-  password    String
-  adminId     String?
-  isAdmin     Boolean    @default(false)
-  step        String?
-  isBanned    Boolean    @default(false)
-  position    String?
-  status      UserStatus @default(pending)
-  gender      String?
-  token       String?
-  Comment     Comment[]
-  Location    Location[]
-  Task        Task[]
-  ExInfo      ExInfo[]
+  id           String      @id @default(uuid())
+  fullName     String
+  email        String      @unique
+  image        String?     @default("")
+  phoneNumber  String?
+  password     String
+  isAdmin      Boolean     @default(false)
+  step         String?
+  position     String?
+  status       UserStatus  @default(pending)
+  gender       String?
+  accessToken  String?
+  refreshToken String?
+  comments     Comment[]
+  messages     Message[]
+  locations    Location[]
+  tasks        Task[]
+  exinfo       ExInfo[]
+  providers    Provider[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  Department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+  Employee     Employee?   @relation(fields: [employeeId], references: [id])
+  employeeId   String?
 }
 
 model Task {
-  id            String    @id @default(uuid())
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  index         BigInt
+  id            String      @id @default(uuid())
+  index         String
   title         String
   description   String
-  status        String
   taskLocation  String
   startLocation String
   endLocation   String
@@ -45,62 +70,96 @@ model Task {
   from          String
   to            String
   deadline      DateTime
-  taskRadius    BigInt
+  taskRadius    String
   userId        String
   startTime     DateTime
   endTime       DateTime
   duration      DateTime
   pauseTime     DateTime
-  isCompleted   Boolean
-  isStarted     Boolean
-  isRunning     Boolean
-  isPaused      Boolean
-  isCanceled    Boolean
-  isArchived    Boolean
-  isDeleted     Boolean
+  status        TaskStatus
   date          DateTime
   Comment       Comment[]
-  user          User      @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  Department    Department? @relation(fields: [departmentId], references: [id])
+  departmentId  String?
+  Employee      Employee?   @relation(fields: [employeeId], references: [id])
+  employeeId    String?
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  text      String
-  taskId    String
-  userId    String
-  date      DateTime
-  task      Task     @relation(fields: [taskId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id         String    @id @default(uuid())
+  taskId     String
+  userId     String
+  date       DateTime
+  task       Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Message    Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+}
+
+model Message {
+  id           String    @id @default(uuid())
+  text         String
+  recipient_id String
+  sender_id    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  Comment      Comment?  @relation(fields: [commentId], references: [id])
+  commentId    String?
+  User         User?     @relation(fields: [userId], references: [id])
+  userId       String?
+  Employee     Employee? @relation(fields: [employeeId], references: [id])
+  employeeId   String?
 }
 
 model Location {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  latitude  Float
-  longitude Float
-  address   String
-  city      String
-  state     String
-  zip       String
-  country   String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id         String    @id @default(uuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  latitude   Float
+  longitude  Float
+  address    String
+  city       String
+  state      String
+  zip        String
+  country    String
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  Employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
 }
 
 model ExInfo {
-  id        String   @id @default(uuid())
-  usage     String?
-  position  String?
-  membersT  String?
-  membersC  String?
-  hear      String?
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(uuid())
+  usage      String?
+  position   String?
+  membersT   String?
+  membersC   String?
+  hear       String?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+}
+
+model Provider {
+  id          String       @id @default(uuid())
+  title       String
+  provider_id Int
+  username    String
+  email       String
+  image       String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  createdAt   DateTime     @default(now())
+  Department  Department[]
 }
 
 model BlackTokenList {
@@ -108,8 +167,55 @@ model BlackTokenList {
   token String
 }
 
+model Company {
+  id          String       @id @default(uuid())
+  name        String
+  phone       String
+  join_date   DateTime     @default(now())
+  status      Status
+  departments Department[]
+  Employee    Employee     @relation(fields: [employeeId], references: [id])
+  employeeId  String
+}
+
+model Department {
+  id         String    @id @default(uuid())
+  name       String
+  join_date  DateTime  @default(now())
+  status     Status
+  tasks      Task[]
+  users      User[]
+  Company    Company?  @relation(fields: [companyId], references: [id])
+  companyId  String?
+  Provider   Provider? @relation(fields: [providerId], references: [id])
+  providerId String?
+  Employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+}
+
 enum UserStatus {
   pending
   verified
   banned
+}
+
+enum Status {
+  pending
+  active
+  inactive
+}
+
+enum TaskStatus {
+  completed
+  started
+  running
+  paused
+  canceled
+  archived
+  deleted
+}
+
+enum Gender {
+  male
+  female
 }

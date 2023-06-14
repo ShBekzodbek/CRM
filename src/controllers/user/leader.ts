@@ -42,9 +42,3 @@ export const AddDepartament = async (
   next: NextFunction
 ) => {};
 
-export const AddEmployee = async (
-  //TODO
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {};

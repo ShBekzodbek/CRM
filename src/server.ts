@@ -7,19 +7,27 @@ import express, {
   RequestHandler,
 } from "express";
 
+import errorHandler from "./utils/functions/error_handler";
+
+import compression from "compression";
+
+import helmet from "helmet";
+
 import logger from "morgan";
 
 import session from "express-session";
 
 import { createClient } from "redis";
 
+import cors from "cors";
+
 import RedisStore from "connect-redis";
 
 let redisClient = createClient({});
 
-import * as UserRoute from "./routes/user/user";
+import userRouter from "./routes/user/user";
 
-import path from "path";
+import adminRouter from "./routes/admin/admin";
 
 import rateLimit from "express-rate-limit";
 
@@ -56,6 +64,7 @@ import { User } from "./interfaces/User/user";
 import { Code } from "./interfaces/User/code";
 
 import { authMiddleware } from "./middlewares/auth/isAuth";
+import { isAdmin } from "./middlewares/auth/isAdmin";
 
 app.use(limiter);
 app.use(
@@ -71,6 +80,9 @@ app.use(
     },
   })
 );
+app.use(compression());
+app.use(helmet());
+app.use(cors());
 
 app.use(express.json());
 
@@ -86,7 +98,9 @@ app.get(
 
 app.use("/auth", auth.router as RequestHandler);
 
-app.use("/me", UserRoute.default);
+app.use("/me", userRouter);
+
+app.use("/admin", isAdmin as RequestHandler, adminRouter as RequestHandler);
 
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -96,6 +110,8 @@ app.use("*", (req: Request, res: Response, next: NextFunction) => {
     return;
   }
 });
+
+app.use(errorHandler);
 
 const port = process.env.PORT || 5000;
 

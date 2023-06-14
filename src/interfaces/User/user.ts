@@ -20,9 +20,9 @@ export interface IUser {
   password: string;
   adminId?: string | null;
   isAdmin: boolean;
+  isEmployee?: boolean;
   step: string | null;
   gender: string | null;
-  isBanned: boolean | undefined;
   position: string | null;
   status: UserStatus;
 }

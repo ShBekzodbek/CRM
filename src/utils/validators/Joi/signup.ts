@@ -1,6 +1,5 @@
 /** @format */
 
-import { Response } from "express";
 import Joi from "joi";
 
 interface UserRegistration {
@@ -14,15 +13,12 @@ const schema = Joi.object().keys({
   fullName: Joi.string().max(60).required(),
   email: Joi.string().email().required(),
   password: Joi.string().required(),
+  position: Joi.string().required().valid("employee", "user"),
 });
 
 // define a function to validate user input
-export function Signup(userInput: UserRegistration, res: Response): any {
+export function Signup(userInput: UserRegistration) {
   // validate the user input against the schema
-  const { error, value } = schema.validate(userInput);
+  return schema.validate(userInput);
   // check if there is any validation error
-  if (error) {
-    // log the error details and return false
-    return res.status(400).send(error.details[0].message);
-  }
 }

@@ -35,6 +35,7 @@ export const GetExtraInfo = async (
         },
       });
     }
+
     const exInfo: any = await prisma.exInfo.create({
       data: {
         userId: extra.userId,
@@ -51,5 +52,3 @@ export const GetExtraInfo = async (
     return;
   }
 };
-
-

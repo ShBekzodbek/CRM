@@ -35,41 +35,41 @@ export const Signup = async (
   next: NextFunction
 ) => {
   try {
-    const password: string = req.body.password;
-    const fullName: string = req.body.fullName;
-    const email: string = req.body.email;
-    const gender: string = req.body.gender;
-    if (!fullName || !email || !password) {
-      return res.status(400).send({ message: "Some input is missing" });
+    const { error, value } = Validator.Signup(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
     }
-    Validator.Signup(req.body, res);
-    const isOldUser = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
+    const isOldUser =
+      (await prisma.user.findUnique({
+        where: {
+          email: value.email,
+        },
+      })) ||
+      (await prisma.employee.findUnique({
+        where: {
+          email: value.email,
+        },
+      }));
     if (isOldUser) {
       return res.status(400).send({ message: "Email already exists" });
     }
     const user: User = {
-      email: email,
-      fullName: fullName,
-      password: password,
-      gender: gender as string,
-      position: "user",
+      email: value.email,
+      fullName: value.fullName,
+      password: value.password,
+      gender: value.gender,
+      position: value.position,
     };
-
     const code = generateCode();
     req.session.user = user;
     req.session.code = { code: code, userEmail: user.email };
-    const text: string = `<h1>Hi ${fullName}</h1>
+    const text: string = `<h1>Hi ${value.fullName}</h1>
     <br/>
     <h3>Your confirmation code is ${code}`;
-    sendEmail(email, "Confirmation code", "", text);
-    return res.send("Email has been sent to " + email);
+    sendEmail(value.email, "Confirmation code", "", text);
+    return res.send("Email has been sent to " + value.email);
   } catch (err) {
-    console.log(err);
-    return;
+    return next(err);
   }
 };
 
@@ -88,21 +88,40 @@ export const verifyUser = async (
     const hash: string = bcrypt.hashSync(user?.password as string, salt);
     const id: string = uuid();
     const token: string = generateToken(id, user?.position as string);
-    const newUser: IUser = await prisma.user.create({
-      data: {
-        id: id,
-        email: user?.email as string,
-        fullName: user?.fullName as string,
-        password: hash,
-        position: user?.position,
-        gender: user?.gender as string,
-        token: token,
-      },
-    });
-    req.session.user = newUser;
+    const token1: string = generateToken(id, user?.position as string);
+    let authedUser;
+    if (user?.position == "employee") {
+      let newUser = await prisma.employee.create({
+        data: {
+          id: id,
+          email: user?.email as string,
+          fullName: user?.fullName as string,
+          password: hash,
+          position: "employee",
+          gender: user?.gender as string,
+          accessToken: token as string,
+          refreshToken: token1,
+        },
+      });
+      authedUser = newUser;
+    } else {
+      let newUser: IUser = await prisma.user.create({
+        data: {
+          id: id,
+          email: user?.email as string,
+          fullName: user?.fullName as string,
+          password: hash,
+          position: user?.position as string,
+          gender: user?.gender as string,
+          accessToken: token,
+          refreshToken: token1,
+        },
+      });
+      authedUser = newUser;
+    }
+    req.session.user = authedUser;
     return res.send({ message: "User has been created", token: token });
   } catch (err) {
-    console.log(err);
-    return;
+    return next(err);
   }
 };
